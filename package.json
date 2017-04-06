@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "lspack",
   "main": "index.js",
+  "bin": "./index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/sunderls/lspack/issues"
   },
-  "homepage": "https://github.com/sunderls/lspack#readme"
+  "homepage": "https://github.com/sunderls/lspack#readme",
+  "devDependencies": {
+    "escodegen": "^1.8.1",
+    "esprima": "^3.1.3",
+    "npm": "^4.4.4"
+  }
 }
