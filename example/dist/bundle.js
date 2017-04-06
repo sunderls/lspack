@@ -14,7 +14,7 @@
 	}
 
 	// kick 
-	require(2);
+	require(3);
 })([function(exports, require){
 exports.log = function(){
     console.log('ModuleB log()');
@@ -33,10 +33,21 @@ exports.default = {
 
 return exports; }
 ,function(exports, require){
+exports.default = {
+    'a': '3',
+    'b': '4'
+}
+
+return exports; }
+,function(exports, require){
 var A = require(1)['default'];
+
+var data = require(2)['default'];
 
 console.log('in enty js');
 A.log();
+console.log('fetched data in custom loader:');
+console.log(`data.a == ${ data.a }`);
 
 return exports; }
 ])

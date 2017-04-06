@@ -4,12 +4,31 @@ const path = require('path');
 const esprima = require('esprima');
 const escodegen = require('escodegen');
 
+// read lspack.config.js and parse
+const config = require(path.resolve('./lspack.config.js'));
 
 // add .js to modulePath if not there
 // support only relative paths now
 const resolveModulePath = (modulePath, relativeTo = '.') => {
 	return path.resolve(relativeTo, /\.\w+$/.test(modulePath) ? modulePath : modulePath + '.js');
 }
+
+// get module text contents, with help of loaders
+const getModuleContents= (modulePath) => {
+	let text = fs.readFileSync(modulePath, {
+		encoding: 'utf8'
+	});
+
+	// if it is not js, apply loaders
+	if (!/\.js/.test(modulePath)) {
+		config.rules.forEach(rule => {
+			if (rule.reg.test(modulePath)) {
+				text = require(`./loaders/${rule.loader}`)(text);
+			}
+		});
+	}
+	return text;
+};
 
 const modulePaths = [];
 const moduleTexts = [];
@@ -35,12 +54,10 @@ const transform = (modulePath) => {
 	];
 
 	// read file from entry
-	const fileText = fs.readFileSync(modulePath, {
-		encoding: 'utf8'
-	});
+	const moduleText = getModuleContents(modulePath);
 
 	// use esprima to detect import statement
-	const program = esprima.parse(fileText, { sourceType: 'module'});
+	const program = esprima.parse(moduleText, { sourceType: 'module'});
 
 	// handle import & export
 	program.body.forEach(line => {
@@ -85,8 +102,7 @@ const transform = (modulePath) => {
 
 
 
-// read lspack.config.js and parse
-const config = require(path.resolve('./lspack.config.js'));
+
 const entryModuleId = transform(resolveModulePath(config.entry));
 
 // we've get all modules, now bootstrap
