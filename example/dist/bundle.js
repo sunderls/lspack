@@ -14,19 +14,31 @@
 	}
 
 	// kick 
-	require(3);
+	require(4);
 })([function(exports, require){
-exports.log = function(){
-    console.log('ModuleB log()');
+exports.default = function (text) {
+    const p = document.createElement('p');
+    p.textContent = text;
+    document.body.appendChild(p);
 }
 
 return exports; }
 ,function(exports, require){
-var logB = require(0)['log'];
+var log = require(0)['default'];
+
+exports.log = function(){
+    log('ModuleB log()');
+}
+
+return exports; }
+,function(exports, require){
+var logB = require(1)['log'];
+
+var log = require(0)['default'];
 
 exports.default = {
     log() {
-        console.log('ModuleA log()');
+        log('ModuleA log()');
         logB();
     }
 }
@@ -40,14 +52,16 @@ exports.default = {
 
 return exports; }
 ,function(exports, require){
-var A = require(1)['default'];
+var A = require(2)['default'];
 
-var data = require(2)['default'];
+var data = require(3)['default'];
 
-console.log('in enty js');
+var log = require(0)['default'];
+
+log('in enty js');
 A.log();
-console.log('fetched data in custom loader:');
-console.log(`data.a == ${ data.a }`);
+log('fetched data in custom loader:');
+log(`data.a == ${ data.a }`);
 
 return exports; }
 ])

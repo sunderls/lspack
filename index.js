@@ -83,6 +83,11 @@ const transform = (modulePath) => {
 				transformedResult.push(`exports.default = ${escodegen.generate(line.declaration)}`);
 				break;
 			}
+
+			if (line.declaration.type === 'FunctionDeclaration') {
+				transformedResult.push(`exports.default = ${escodegen.generate(line.declaration)}`);
+				break;
+			}
 		case 'ExportNamedDeclaration':
 			if (line.declaration.type === 'FunctionDeclaration') {
 				transformedResult.push(`exports.${line.declaration.id.name} = function()${escodegen.generate(line.declaration.body)}`);
