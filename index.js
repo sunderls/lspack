@@ -4,29 +4,16 @@ const path = require('path');
 const esprima = require('esprima');
 const escodegen = require('escodegen');
 const parseEntry = require('./lib/parseEntry');
+const collectFiles = require('./lib/collectFiles');
 
 // read lspack.config.js and parse
 const config = require(path.resolve('./lspack.config.js'));
 
 const entry = parseEntry(config.entry);
-console.log(entry);
 
-// // get module text contents, with help of loaders
-// const getModuleContents= (modulePath) => {
-// 	let text = fs.readFileSync(modulePath, {
-// 		encoding: 'utf8'
-// 	});
+const files = collectFiles(entry);
+console.log(files);
 
-// 	// if it is not js, apply loaders
-// 	if (!/\.js/.test(modulePath)) {
-// 		config.rules.forEach(rule => {
-// 			if (rule.reg.test(modulePath)) {
-// 				text = require(`./loaders/${rule.loader}`)(text);
-// 			}
-// 		});
-// 	}
-// 	return text;
-// };
 
 // const files = collectFiles(config.entry);
 // const modules = wrapToModules(files);
