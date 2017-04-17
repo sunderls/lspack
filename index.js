@@ -3,133 +3,138 @@ const fs = require('fs');
 const path = require('path');
 const esprima = require('esprima');
 const escodegen = require('escodegen');
+const parseEntry = require('./lib/parseEntry');
 
 // read lspack.config.js and parse
 const config = require(path.resolve('./lspack.config.js'));
 
-// add .js to modulePath if not there
-// support only relative paths now
-const resolveModulePath = (modulePath, relativeTo = '.') => {
-	return path.resolve(relativeTo, /\.\w+$/.test(modulePath) ? modulePath : modulePath + '.js');
-}
+const entry = parseEntry(config.entry);
+console.log(entry);
 
-// get module text contents, with help of loaders
-const getModuleContents= (modulePath) => {
-	let text = fs.readFileSync(modulePath, {
-		encoding: 'utf8'
-	});
+// // get module text contents, with help of loaders
+// const getModuleContents= (modulePath) => {
+// 	let text = fs.readFileSync(modulePath, {
+// 		encoding: 'utf8'
+// 	});
 
-	// if it is not js, apply loaders
-	if (!/\.js/.test(modulePath)) {
-		config.rules.forEach(rule => {
-			if (rule.reg.test(modulePath)) {
-				text = require(`./loaders/${rule.loader}`)(text);
-			}
-		});
-	}
-	return text;
-};
+// 	// if it is not js, apply loaders
+// 	if (!/\.js/.test(modulePath)) {
+// 		config.rules.forEach(rule => {
+// 			if (rule.reg.test(modulePath)) {
+// 				text = require(`./loaders/${rule.loader}`)(text);
+// 			}
+// 		});
+// 	}
+// 	return text;
+// };
 
-const modulePaths = [];
-const moduleTexts = [];
+// const files = collectFiles(config.entry);
+// const modules = wrapToModules(files);
+// const chunks = generateChunks(config.entry, chunks);
+// const assets = generateAssets(chunks);
 
-// get module's ID
-// push into modules if not found
-const getModuleId = (modulePath) => {
-	const id = modulePaths.indexOf(modulePath);
-	if (id === -1) {
-		return transform(modulePath);
-	}
+// outputAssets(assets);
 
-	return id;
-}
+// const modulePaths = [];
+// const moduleTexts = [];
 
-// transform a file to module
-// 1. read file text
-// 2. get imports & transform recursively
-// 3. return index
-const transform = (modulePath) => {
-	const transformedResult = [
-		'function(exports, require){'
-	];
+// // get module's ID
+// // push into modules if not found
+// const getModuleId = (modulePath) => {
+// 	const id = modulePaths.indexOf(modulePath);
+// 	if (id === -1) {
+// 		return transform(modulePath);
+// 	}
 
-	// read file from entry
-	const moduleText = getModuleContents(modulePath);
+// 	return id;
+// }
 
-	// use esprima to detect import statement
-	const program = esprima.parse(moduleText, { sourceType: 'module'});
+// // transform a file to module
+// // 1. read file text
+// // 2. get imports & transform recursively
+// // 3. return index
+// const transform = (modulePath) => {
+// 	const transformedResult = [
+// 		'function(exports, require){'
+// 	];
 
-	// handle import & export
-	program.body.forEach(line => {
-		switch (line.type) {
-		case 'ImportDeclaration': 
-			const id = getModuleId(resolveModulePath(line.source.value, path.dirname(modulePath)));
+// 	// read file from entry
+// 	const moduleText = getModuleContents(modulePath);
 
-			line.specifiers.forEach(specifier => {
-				// [TODO] more types
-				switch (specifier.type) {
-					case 'ImportDefaultSpecifier':
-						transformedResult.push(`var ${specifier.local.name} = require(${id})['default'];\n`);
-						break;
-					case 'ImportSpecifier':
-						transformedResult.push(`var ${specifier.local.name} = require(${id})['${specifier.imported.name}'];\n`);
-						break;
-				}
-			});
-			break;
-		case 'ExportDefaultDeclaration': 
-			// export default {}
-			if (line.declaration.type === 'ObjectExpression') {
-				transformedResult.push(`exports.default = ${escodegen.generate(line.declaration)}`);
-				break;
-			}
+// 	// use esprima to detect import statement
+// 	const program = esprima.parse(moduleText, { sourceType: 'module'});
 
-			if (line.declaration.type === 'FunctionDeclaration') {
-				transformedResult.push(`exports.default = ${escodegen.generate(line.declaration)}`);
-				break;
-			}
-		case 'ExportNamedDeclaration':
-			if (line.declaration.type === 'FunctionDeclaration') {
-				transformedResult.push(`exports.${line.declaration.id.name} = function()${escodegen.generate(line.declaration.body)}`);
-				break;
-			}
-		// [TODO] more types
-		default:
-			transformedResult.push(escodegen.generate(line));
-		}
-	});
-	transformedResult.push('\nreturn exports; }\n');
+// 	// handle import & export
+// 	program.body.forEach(line => {
+// 		switch (line.type) {
+// 		case 'ImportDeclaration': 
+// 			const id = getModuleId(resolveModulePath(line.source.value, path.dirname(modulePath)));
 
-	moduleTexts.push(transformedResult.join('\n'));
-	modulePaths.push(modulePath);
-	return moduleTexts.length - 1;
-};
+// 			line.specifiers.forEach(specifier => {
+// 				// [TODO] more types
+// 				switch (specifier.type) {
+// 					case 'ImportDefaultSpecifier':
+// 						transformedResult.push(`var ${specifier.local.name} = require(${id})['default'];\n`);
+// 						break;
+// 					case 'ImportSpecifier':
+// 						transformedResult.push(`var ${specifier.local.name} = require(${id})['${specifier.imported.name}'];\n`);
+// 						break;
+// 				}
+// 			});
+// 			break;
+// 		case 'ExportDefaultDeclaration': 
+// 			// export default {}
+// 			if (line.declaration.type === 'ObjectExpression') {
+// 				transformedResult.push(`exports.default = ${escodegen.generate(line.declaration)}`);
+// 				break;
+// 			}
+
+// 			if (line.declaration.type === 'FunctionDeclaration') {
+// 				transformedResult.push(`exports.default = ${escodegen.generate(line.declaration)}`);
+// 				break;
+// 			}
+// 		case 'ExportNamedDeclaration':
+// 			if (line.declaration.type === 'FunctionDeclaration') {
+// 				transformedResult.push(`exports.${line.declaration.id.name} = function()${escodegen.generate(line.declaration.body)}`);
+// 				break;
+// 			}
+// 		// [TODO] more types
+// 		default:
+// 			transformedResult.push(escodegen.generate(line));
+// 		}
+// 	});
+// 	transformedResult.push('\nreturn exports; }\n');
+
+// 	moduleTexts.push(transformedResult.join('\n'));
+// 	modulePaths.push(modulePath);
+// 	return moduleTexts.length - 1;
+// };
 
 
 
 
-const entryModuleId = transform(resolveModulePath(config.entry));
+// const entryModuleId = transform(resolveModulePath(config.entry));
 
-// we've get all modules, now bootstrap
-const bundle = `
-(function(moduleFactories) {
-	// all modules should be instantiated lazily
-	var modules = [];
+// // we've get all modules, now bootstrap
+// const bundle = `
+// (function(moduleFactories) {
+// 	// all modules should be instantiated lazily
+// 	var modules = [];
 
-	function require(id) {
-		if (modules[id]) {
-			return modules[id];
-		} else {
-			var m = moduleFactories[id]({}, require);
-			modules.push(m);
-			return modules[id];
-		}
-	}
+// 	function require(id) {
+// 		if (modules[id]) {
+// 			return modules[id];
+// 		} else {
+// 			var m = moduleFactories[id]({}, require);
+// 			modules.push(m);
+// 			return modules[id];
+// 		}
+// 	}
 
-	// kick 
-	require(${entryModuleId});
-})([${moduleTexts.join(',')}])
-`;
+// 	// kick 
+// 	require(${entryModuleId});
+// })([${moduleTexts.join(',')}])
+// `;
 
-// write to dist
-fs.writeFileSync(config.output, bundle);
+// // write to dist
+// fs.writeFileSync(config.output, bundle);
