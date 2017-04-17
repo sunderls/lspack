@@ -1,21 +1,22 @@
 
-(function(moduleFactories) {
-	// all modules should be instantiated lazily
-	var modules = [];
+				(function(moduleFactories) {
+					// all modules should be instantiated lazily
+					var modules = [];
 
-	function require(id) {
-		if (modules[id]) {
-			return modules[id];
-		} else {
-			var m = moduleFactories[id]({}, require);
-			modules.push(m);
-			return modules[id];
-		}
-	}
+					function require(id) {
+						if (modules[id]) {
+							return modules[id];
+						} else {
+							var m = moduleFactories[id]({}, require);
+							modules.push(m);
+							return modules[id];
+						}
+					}
 
-	// kick 
-	require(4);
-})([function(exports, require){
+					// kick
+					require(4);
+					
+				})([function(exports, require){
 exports.default = function (text) {
     const p = document.createElement('p');
     p.textContent = text;
@@ -64,4 +65,13 @@ log('fetched data in custom loader:');
 log(`data.a == ${ data.a }`);
 
 return exports; }
+,function(exports, require){
+exports.default = function (text) {
+    const p = document.createElement('p');
+    p.textContent = text;
+    document.body.appendChild(p);
+}
+
+return exports; }
 ])
+				

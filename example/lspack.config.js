@@ -11,8 +11,13 @@ class FileListPlugin {
 }
 
 module.exports = {
-	entry: './src/index.js',
-	output: './dist/bundle.js',
+	entry: {
+		app: './src/index.js'
+	},
+	output: {
+		path: './dist/',
+		fileName: '[name].js'
+	},
 	rules: [
 		{
 			reg: /\.ls$/,
