@@ -7,16 +7,16 @@ exports.resolveModulePath = (modulePath, relativeTo = '.') => {
 	return path.resolve(relativeTo, /\.\w+$/.test(modulePath) ? modulePath : modulePath + '.js');
 }
 
-exports.getModuleContents= (modulePath) => {
+exports.getModuleContents= (modulePath, rules = {}) => {
 	let text = fs.readFileSync(modulePath, {
 		encoding: 'utf8'
 	});
 
 	// if it is not js, apply loaders
 	if (!/\.js/.test(modulePath)) {
-		config.rules.forEach(rule => {
+		rules.forEach(rule => {
 			if (rule.reg.test(modulePath)) {
-				text = require(`./loaders/${rule.loader}`)(text);
+				text = require(`../loaders/${rule.loader}`)(text);
 			}
 		});
 	}
