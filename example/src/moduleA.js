@@ -1,8 +1,8 @@
 import {log as logB} from './moduleB';
-
+import log from './log.js';
 export default {
 	log() {
-		console.log('ModuleA log()');
+		log('ModuleA log()');
 		logB();
 	}
 }

@@ -1,3 +1,5 @@
+import log from './log.js';
+
 export function log(){
-	console.log('ModuleB log()');
+	log('ModuleB log()');
 }
