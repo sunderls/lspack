@@ -1,11 +1,15 @@
 class FileListPlugin {
 	apply(lspack) {
-		lspack.plugin('assetsConfirmed', ({assets}) => {
-			assets['filelist.md'] = {
+		lspack.plugin('assetsGenerated', (assets) => {
+			const assetsNow = assets.slice(0);
+			assets.push({
 				source: () => {
-					assets.map(asset => asset.filename).join('\n');
+					return assetsNow.map(asset => lspack.output(asset.output)).join('\n');
+				},
+				output: {
+					fileName: 'filelist.md'
 				}
-			};
+			});
 		});
 	}
 }
